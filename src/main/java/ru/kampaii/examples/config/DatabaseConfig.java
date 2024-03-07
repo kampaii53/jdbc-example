@@ -10,10 +10,7 @@ public class DatabaseConfig {
 
     static {
         try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream("application.properties")) {
-            if (input == null) {
-                System.out.println("Sorry, unable to find application.properties");
-                System.exit(1);
-            }
+
             // Load the properties file
             properties.load(input);
         } catch (IOException e) {
