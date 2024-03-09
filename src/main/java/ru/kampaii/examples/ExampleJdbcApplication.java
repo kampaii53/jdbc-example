@@ -7,6 +7,7 @@ import java.sql.SQLException;
 public class ExampleJdbcApplication {
 
     public static void main(String[] args) {
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
         try (var connection = DatabaseConnectorProvider.connect();
              var statement = connection.createStatement()) {
             System.out.println("Connected succesfully");

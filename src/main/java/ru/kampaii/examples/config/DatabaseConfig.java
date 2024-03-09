@@ -1,5 +1,6 @@
 package ru.kampaii.examples.config;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -9,9 +10,10 @@ public class DatabaseConfig {
     private static final Properties properties = new Properties();
 
     static {
-        try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream("application.properties")) {
+        try (InputStream input = ClassLoader.getSystemResourceAsStream("application.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find application.properties");
+                System.out.println("Sorry, unable to find application.properties from "
+                        + new File("").getAbsolutePath());
                 System.exit(1);
             }
             // Load the properties file
