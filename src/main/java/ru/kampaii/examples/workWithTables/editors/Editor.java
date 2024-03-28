@@ -1,6 +1,7 @@
 package ru.kampaii.examples.workWithTables.editors;
 
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
+import ru.kampaii.examples.workWithTables.representers.Representer;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -93,7 +94,7 @@ public class Editor {
         //Надо передать в метод строку условия по которой будем удалять
     }
 
-    public List<String> getStringsByKey(Object key, String columnForSelect) {
+    public Representer getStringsByKey(Object key, String columnForSelect) {
         List<String> representList = new ArrayList();
         try (var connection = DatabaseConnectorProvider.connect(); var statement = connection.createStatement();) {
             var results = statement.executeQuery("SELECT * FROM " + tableName + " WHERE " + columnForSelect + "=" + key + ";");
@@ -108,10 +109,10 @@ public class Editor {
             e.printStackTrace();
 
         }
-        return representList;
+        return new Representer(representList);
     }
 
-    public List<String> getAllString() {
+    public Representer getAllString() {
         List<String> representList = new ArrayList();
         try (var connection = DatabaseConnectorProvider.connect(); var statement = connection.createStatement();) {
             var results = statement.executeQuery("SELECT * FROM " + tableName);
@@ -126,7 +127,7 @@ public class Editor {
             e.printStackTrace();
 
         }
-        return representList;
+        return new Representer(representList);
     }
 
     public List<String> getNamesOfStrings() {
