@@ -1,15 +1,19 @@
 package ru.kampaii.examples.domain.representers;
 
-import java.util.List;
-
 public class OperationsAppliedSettingsEntity implements Entity{
-    private List data;
+    private final Integer operationId;
+    private final Integer settingId;
 
-    public OperationsAppliedSettingsEntity(List data) {
-        this.data = data;
+    public OperationsAppliedSettingsEntity(Integer operationId, Integer settingId) {
+        this.operationId = operationId;
+        this.settingId = settingId;
     }
 
-    public List getData() {
-        return data;
+    public Integer getOperationId() {
+        return operationId;
+    }
+
+    public Integer getSettingId() {
+        return settingId;
     }
 }

@@ -3,9 +3,13 @@ package ru.kampaii.examples.domain.editors;
 import ru.kampaii.examples.domain.representers.Entity;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class Repository<T extends Entity, ID> {
 
@@ -21,19 +25,17 @@ public abstract class Repository<T extends Entity, ID> {
      * @return обьект, null если обьекта не найдено
      */
     public T getById(ID id) {
-        List<String> representList = new ArrayList();
-        try (var statement = connection.createStatement();) {
-            var results = statement.executeQuery("SELECT * FROM " + tableName + " WHERE " + primaryKey + "=" + id + ";");
+        Map<String, Object> representList = new HashMap<>();
+        ResultSet results = null;
+        try {
+            results = executeQuery("SELECT * FROM " + tableName + " WHERE " + primaryKey + "=" + id + ";");
             while (results.next()) {
-                String newData = "";
                 for (int i = 0; i < namesOfStrings.size(); i++) {
-                    newData += namesOfStrings.get(i) + "=" + results.getString(i + 1) + " ";
+                    representList.put(namesOfStrings.get(i), results.getString(i + 1));
                 }
-                representList.add(newData);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-
+            throw new RuntimeException(e);
         }
         if (representList.size() > 0) {
             return makeT(representList);
@@ -50,17 +52,9 @@ public abstract class Repository<T extends Entity, ID> {
      */
     public T create(T object) {
         ID id = makeNewId();
-        List<String> dataFromT = object.getData();
-        List<String> data = new ArrayList<>();
-        for (int i = 0; i < dataFromT.size() + 2; i++) {
-            if (i == getNumOfLine(primaryKey)) {
-                data.add(String.valueOf(id));
-            } else {
-                data.add(dataFromT.get(0));
-                dataFromT.remove(0);
-            }
-        }
-        try (var statement = connection.createStatement();) {
+        Map<String, Object> data = getData(object);
+        data.put(primaryKey, id);
+        try {
             String insert = "INSERT INTO " + tableName + " (";
             for (int i = 0; i < namesOfStrings.size(); i++) {
                 if (i != namesOfStrings.size() - 1) {
@@ -73,14 +67,12 @@ public abstract class Repository<T extends Entity, ID> {
             insert += ") VALUES (";
             for (int i = 0; i < namesOfStrings.size(); i++) {
                 if (i != namesOfStrings.size() - 1) {
-                    insert += data.get(i) + ",";
+                    insert += data.get(namesOfStrings.get(i)) + ",";
                 } else {
-                    insert += data.get(i) + ");";
+                    insert += data.get(namesOfStrings.get(i)) + ");";
                 }
-
             }
-            System.out.println(insert);
-            statement.execute(insert);
+            execute(insert);
         } catch (SQLException e) {
             e.printStackTrace();
 
@@ -94,12 +86,11 @@ public abstract class Repository<T extends Entity, ID> {
      * @param id
      */
     public void delete(ID id) {
-        try (var statement = connection.createStatement();) {
-            String update = "DELETE FROM " + tableName + " WHERE " + primaryKey + "=" + id + ";";
-            statement.executeQuery(update);
+        String update = "DELETE FROM " + tableName + " WHERE " + primaryKey + "=" + id + ";";
+        try {
+            execute(update);
         } catch (SQLException e) {
-            e.printStackTrace();
-
+            throw new RuntimeException(e);
         }
     }
 
@@ -110,24 +101,53 @@ public abstract class Repository<T extends Entity, ID> {
      * @return получившуюся строку
      */
     public T update(T object) {
-        List<String> data = object.getData();
-        try (var statement = connection.createStatement();) {
-            String update = "UPDATE " + tableName + " SET ";
-            for (int i = 0; i < namesOfStrings.size(); i++) {
-                if (i != namesOfStrings.size() - 1) {
-                    update += namesOfStrings.get(i) + "=" + data.get(i) + ",";
-                } else {
-                    update += namesOfStrings.get(i) + "=" + data.get(i);
-                }
+        String update = "UPDATE " + tableName + " SET ";
+        Map<String, Object> data = getData(object);
+        for (int i = 0; i < namesOfStrings.size(); i++) {
+            if (i != namesOfStrings.size() - 1) {
+                update += namesOfStrings.get(i) + "=" + data.get(namesOfStrings.get(i)) + ",";
+            } else {
+                update += namesOfStrings.get(i) + "=" + data.get(namesOfStrings.get(i));
             }
-            update += " WHERE " + primaryKey + "=" + data.get(getNumOfLine(primaryKey)) + ";";
-            statement.execute(update);
-            System.out.println(update);
+        }
+        update += " WHERE " + primaryKey + "=" + data.get(getNumOfLine(primaryKey)) + ";";
+        try {
+            execute(update);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return getById((ID) data.get(getNumOfLine(primaryKey)));
+    }
+
+    private ResultSet executeQuery(String request) throws SQLException {
+        var statement = connection.createStatement();
+        var result = statement.executeQuery(request);
+        System.out.println(request);
+        return result;
+    }
+
+    private void execute(String request) throws SQLException {
+        var statement = connection.createStatement();
+        statement.execute(request);
+        System.out.println(request);
+    }
+
+    public List createNamesOfStrings() {
+        List<String> namesOfStrings = new ArrayList();
+        try (var statement = connection.createStatement()) {
+            ResultSet results = statement.executeQuery("SELECT * FROM " + tableName);
+            ResultSetMetaData metaData = results.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            for (int column = 1; column <= columnCount; column++) {
+                String name = metaData.getColumnName(column);
+                namesOfStrings.add(name);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
 
         }
-        return getById((ID) data.get(getNumOfLine(primaryKey)));
+        return namesOfStrings;
     }
 
     int getNumOfLine(String nameOfLine) {
@@ -140,7 +160,9 @@ public abstract class Repository<T extends Entity, ID> {
         return numOfLine;
     }
 
-    abstract T makeT(List list);
+    abstract Map<String, Object> getData(T object);
+
+    abstract T makeT(Map<String, Object> data);
 
     abstract ID makeNewId();
 

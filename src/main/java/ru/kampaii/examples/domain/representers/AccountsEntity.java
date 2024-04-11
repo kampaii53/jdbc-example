@@ -1,15 +1,31 @@
 package ru.kampaii.examples.domain.representers;
 
-import java.util.List;
+public class AccountsEntity implements Entity {
+    private final Integer number;
+    private final float balance;
+    private final Integer type;
+    private final Integer userId;
 
-public class AccountsEntity implements Entity{
-    private List data;
-
-    public AccountsEntity(List data) {
-        this.data = data;
+    public AccountsEntity(Integer number, Float balance, Integer type, Integer userId) {
+        this.number = number;
+        this.balance = balance;
+        this.type = type;
+        this.userId = userId;
     }
 
-    public List getData() {
-        return data;
+    public float getBalance() {
+        return balance;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public Integer getNumber() {
+        return number;
     }
 }

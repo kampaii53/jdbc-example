@@ -1,15 +1,19 @@
 package ru.kampaii.examples.domain.representers;
 
-import java.util.List;
-
 public class UsersSettingEntity implements Entity{
-    private List data;
+    private final Integer userId;
+    private final Integer settingId;
 
-    public UsersSettingEntity(List data) {
-        this.data = data;
+    public UsersSettingEntity(Integer userId, Integer settingId) {
+        this.userId = userId;
+        this.settingId = settingId;
     }
 
-    public List getData() {
-        return data;
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public Integer getSettingId() {
+        return settingId;
     }
 }

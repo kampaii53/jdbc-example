@@ -1,15 +1,19 @@
 package ru.kampaii.examples.domain.representers;
 
-import java.util.List;
-
 public class AccountTypesEntity implements Entity{
-    private List data;
+    private final String name;
+    private final Integer Id;
 
-    public AccountTypesEntity(List data) {
-        this.data = data;
+    public AccountTypesEntity(Integer Id, String name) {
+        this.name = name;
+        this.Id = Id;
     }
 
-    public List getData() {
-        return data;
+    public Integer getId() {
+        return Id;
+    }
+
+    public String getName() {
+        return name;
     }
 }

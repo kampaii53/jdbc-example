@@ -1,48 +1,41 @@
 package ru.kampaii.examples.domain.editors;
 
-import ru.kampaii.examples.domain.representers.Entity;
 import ru.kampaii.examples.domain.representers.UsersEntity;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class UsersRepositoryImpl extends Repository {
+public class UsersRepositoryImpl extends Repository<UsersEntity, Integer> {
 
     public UsersRepositoryImpl(Connection connection) {
         this.tableName = "users";
         this.primaryKey = "id";
-        this.namesOfStrings = new ArrayList<>();
         this.connection = connection;
-        try (var statement = connection.createStatement();) {
-            ResultSet results = statement.executeQuery("SELECT * FROM " + tableName);
-            ResultSetMetaData metaData = results.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            for (int column = 1; column <= columnCount; column++) {
-                String name = metaData.getColumnName(column);
-                namesOfStrings.add(name);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        }
-
+        this.namesOfStrings = createNamesOfStrings();
     }
 
     @Override
-    Entity makeT(List list) {
-        return new UsersEntity(list);
+    Map<String, Object> getData(UsersEntity object) {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put(namesOfStrings.get(0), object.getId());
+        data.put(namesOfStrings.get(1), object.getName());
+        data.put(namesOfStrings.get(2), object.getTotalBalance());
+        return data;
     }
 
     @Override
-    Object makeNewId() {
+    UsersEntity makeT(Map<String, Object> data) {
+        return new UsersEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), ((String) data.get(namesOfStrings.get(1))), Float.valueOf((String) data.get(namesOfStrings.get(2))));
+    }
+
+    @Override
+    Integer makeNewId() {
         List<Integer> representList = new ArrayList();
-        try (var statement = connection.createStatement();) {
+        try (var statement = connection.createStatement()) {
             int numOfPrimaryKey = getNumOfLine(primaryKey);
             var results = statement.executeQuery("SELECT * FROM " + tableName);
             while (results.next()) {
@@ -50,9 +43,10 @@ public class UsersRepositoryImpl extends Repository {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-
         }
-        representList.sort(Comparator.reverseOrder());
-        return (representList.get(0) + 1);
+        if (representList.size() == 0) {
+            return 1;
+        }
+        return (representList.get(representList.size() - 1)) + 1;
     }
 }

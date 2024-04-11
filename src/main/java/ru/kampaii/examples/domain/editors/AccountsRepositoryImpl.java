@@ -1,58 +1,53 @@
 package ru.kampaii.examples.domain.editors;
 
 import ru.kampaii.examples.domain.representers.AccountsEntity;
-import ru.kampaii.examples.domain.representers.Entity;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class AccountsRepositoryImpl extends Repository {
+public class AccountsRepositoryImpl extends Repository<AccountsEntity, Integer> {
 
     public AccountsRepositoryImpl(Connection connection) {
         this.tableName = "accounts";
         this.primaryKey = "number";
-        this.namesOfStrings = new ArrayList<>();
         this.connection = connection;
-        try (var statement = connection.createStatement();) {
-            ResultSet results = statement.executeQuery("SELECT * FROM " + tableName);
-            ResultSetMetaData metaData = results.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            for (int column = 1; column <= columnCount; column++) {
-                String name = metaData.getColumnName(column);
-                namesOfStrings.add(name);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-        }
-
+        this.namesOfStrings = createNamesOfStrings();
     }
 
     @Override
-    Entity makeT(List list) {
-        return new AccountsEntity(list);
+    Map<String, Object> getData(AccountsEntity object) {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put(namesOfStrings.get(0), object.getNumber());
+        data.put(namesOfStrings.get(1), object.getBalance());
+        data.put(namesOfStrings.get(2), object.getType());
+        data.put(namesOfStrings.get(3), object.getUserId());
+        return data;
     }
 
     @Override
-    Object makeNewId() {
-        List<Integer> representList = new ArrayList();
-        try (var statement = connection.createStatement();) {
+    AccountsEntity makeT(Map<String, Object> data) {
+        return new AccountsEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), Float.valueOf((String) data.get(namesOfStrings.get(1))), Integer.valueOf((String) data.get(namesOfStrings.get(2))), Integer.valueOf((String) data.get(namesOfStrings.get(3))));
+    }
+
+    @Override
+    Integer makeNewId() {
+        List<java.lang.Integer> representList = new ArrayList();
+        try (var statement = connection.createStatement()) {
             int numOfPrimaryKey = getNumOfLine(primaryKey);
             var results = statement.executeQuery("SELECT * FROM " + tableName);
             while (results.next()) {
-                representList.add(Integer.valueOf(results.getString(numOfPrimaryKey + 1)));
+                representList.add(Integer.valueOf(results.getInt(numOfPrimaryKey + 1)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
-
         }
-        representList.sort(Comparator.reverseOrder());
-        return (representList.get(0) + 1);
+        if (representList.size() == 0) {
+            return 1;
+        }
+        return (representList.get(representList.size() - 1) + 1);
     }
 }

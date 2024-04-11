@@ -1,16 +1,25 @@
 package ru.kampaii.examples.domain.representers;
 
-import java.util.List;
-
 public class UsersEntity implements Entity {
-    private List data;
+    private final String name;
+    private final Integer Id;
+    private final Float totalBalance;
 
-    public UsersEntity(List data) {
-        this.data = data;
+    public UsersEntity(Integer Id, String name, Float totalBalance) {
+        this.name = name;
+        this.Id = Id;
+        this.totalBalance = totalBalance;
     }
 
-    @Override
-    public List getData() {
-        return data;
+    public Integer getId() {
+        return Id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Float getTotalBalance() {
+        return totalBalance;
     }
 }
