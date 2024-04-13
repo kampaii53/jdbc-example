@@ -1,4 +1,4 @@
-package ru.kampaii.examples.domain.representers;
+package ru.kampaii.examples.domain.entities;
 
 public class OperationsEntity implements Entity{
     private final Integer toAccount;

@@ -1,6 +1,6 @@
-package ru.kampaii.examples.domain.editors;
+package ru.kampaii.examples.domain.repositorys;
 
-import ru.kampaii.examples.domain.representers.Entity;
+import ru.kampaii.examples.domain.entities.Entity;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
