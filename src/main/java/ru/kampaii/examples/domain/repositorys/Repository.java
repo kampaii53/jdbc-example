@@ -1,6 +1,7 @@
 package ru.kampaii.examples.domain.repositorys;
 
 import ru.kampaii.examples.domain.entities.Entity;
+import ru.kampaii.examples.domain.idGenerators.IdGenerator;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,6 +18,7 @@ public abstract class Repository<T extends Entity, ID> {
     String primaryKey;
     List<String> namesOfStrings;
     Connection connection;
+    IdGenerator<ID> idGenerator;
 
     /**
      * Получение обьекта из базы по Id
@@ -133,37 +135,40 @@ public abstract class Repository<T extends Entity, ID> {
     }
 
     public List createNamesOfStrings() {
-        List<String> namesOfStrings = new ArrayList();
+        List<String> names = new ArrayList();
         try (var statement = connection.createStatement()) {
             ResultSet results = statement.executeQuery("SELECT * FROM " + tableName);
             ResultSetMetaData metaData = results.getMetaData();
             int columnCount = metaData.getColumnCount();
             for (int column = 1; column <= columnCount; column++) {
                 String name = metaData.getColumnName(column);
-                namesOfStrings.add(name);
+                names.add(name);
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
 
         }
-        return namesOfStrings;
+        return names;
     }
 
     int getNumOfLine(String nameOfLine) {
         int numOfLine = 0;
         for (int i = 0; i < namesOfStrings.size(); i++) {
-            if (namesOfStrings.get(i) == nameOfLine) {
+            if (namesOfStrings.get(i).equals(nameOfLine)) {
                 numOfLine = i;
             }
         }
         return numOfLine;
     }
 
+    ID makeNewId() {
+        return idGenerator.makeNewId();
+    }
+
     abstract Map<String, Object> getData(T object);
 
     abstract T makeT(Map<String, Object> data);
 
-    abstract ID makeNewId();
 
 }

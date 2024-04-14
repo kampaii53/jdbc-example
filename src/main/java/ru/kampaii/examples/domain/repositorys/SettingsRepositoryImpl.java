@@ -1,7 +1,7 @@
 package ru.kampaii.examples.domain.repositorys;
 
-import ru.kampaii.examples.domain.IdGenerator;
 import ru.kampaii.examples.domain.entities.SettingsEntity;
+import ru.kampaii.examples.domain.idGenerators.SettingsIdGeneratorImpl;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -14,6 +14,7 @@ public class SettingsRepositoryImpl extends Repository<SettingsEntity, Integer> 
         this.primaryKey = "id";
         this.connection = connection;
         this.namesOfStrings = createNamesOfStrings();
+        this.idGenerator = new SettingsIdGeneratorImpl(connection);
     }
 
     @Override
@@ -29,9 +30,5 @@ public class SettingsRepositoryImpl extends Repository<SettingsEntity, Integer> 
         return data;
     }
 
-    @Override
-    Integer makeNewId() {
-        return IdGenerator.makeNewIdInt(connection, tableName, getNumOfLine(primaryKey));
-    }
 }
 
