@@ -1,7 +1,7 @@
 package ru.kampaii.examples.domain.repositorys;
 
 import ru.kampaii.examples.domain.entities.OperationsAppliedSettingsEntity;
-import ru.kampaii.examples.domain.idGenerators.OperationsAppliedSettingsIdGeneratorImpl;
+import ru.kampaii.examples.domain.idGenerators.IdGeneratorIntegerImpl;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -14,7 +14,8 @@ public class OperationsAppliedSettingsRepositoryImpl extends Repository<Operatio
         this.primaryKey = "operation_id";
         this.connection = connection;
         this.namesOfStrings = createNamesOfStrings();
-        this.idGenerator = new OperationsAppliedSettingsIdGeneratorImpl(connection);
+        this.numOfPrimaryKey = getNumOfLine(primaryKey);
+        this.idGenerator = new IdGeneratorIntegerImpl(connection, tableName, primaryKey, numOfPrimaryKey);
     }
 
     @Override

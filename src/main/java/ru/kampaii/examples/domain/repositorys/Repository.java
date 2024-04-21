@@ -18,7 +18,8 @@ public abstract class Repository<T extends Entity, ID> {
     String primaryKey;
     List<String> namesOfStrings;
     Connection connection;
-    IdGenerator<ID> idGenerator;
+    IdGenerator idGenerator;
+    Integer numOfPrimaryKey;
 
     /**
      * Получение обьекта из базы по Id
@@ -112,26 +113,24 @@ public abstract class Repository<T extends Entity, ID> {
                 update += namesOfStrings.get(i) + "=" + data.get(namesOfStrings.get(i));
             }
         }
-        update += " WHERE " + primaryKey + "=" + data.get(getNumOfLine(primaryKey)) + ";";
+        update += " WHERE " + primaryKey + "=" + data.get(numOfPrimaryKey) + ";";
         try {
             execute(update);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return getById((ID) data.get(getNumOfLine(primaryKey)));
+        return getById((ID) data.get(numOfPrimaryKey));
     }
 
     private ResultSet executeQuery(String request) throws SQLException {
         var statement = connection.createStatement();
         var result = statement.executeQuery(request);
-        System.out.println(request);
         return result;
     }
 
     private void execute(String request) throws SQLException {
         var statement = connection.createStatement();
         statement.execute(request);
-        System.out.println(request);
     }
 
     public List createNamesOfStrings() {
@@ -163,7 +162,7 @@ public abstract class Repository<T extends Entity, ID> {
     }
 
     ID makeNewId() {
-        return idGenerator.makeNewId();
+        return (ID) idGenerator.makeNewId();
     }
 
     abstract Map<String, Object> getData(T object);

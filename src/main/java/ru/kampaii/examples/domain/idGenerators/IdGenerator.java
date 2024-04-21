@@ -1,5 +1,13 @@
 package ru.kampaii.examples.domain.idGenerators;
 
-public interface IdGenerator<T> {
-    T makeNewId();
+import java.sql.Connection;
+
+public abstract class IdGenerator<ID> {
+
+    Connection connection;
+    String tableName;
+    String primaryKey;
+    Integer numOfPrimaryKey;
+
+    public abstract ID makeNewId();
 }

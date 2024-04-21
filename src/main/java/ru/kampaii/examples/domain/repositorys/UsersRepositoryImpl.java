@@ -1,7 +1,7 @@
 package ru.kampaii.examples.domain.repositorys;
 
 import ru.kampaii.examples.domain.entities.UsersEntity;
-import ru.kampaii.examples.domain.idGenerators.UsersIdGeneratorImpl;
+import ru.kampaii.examples.domain.idGenerators.IdGeneratorIntegerImpl;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -14,7 +14,8 @@ public class UsersRepositoryImpl extends Repository<UsersEntity, Integer> {
         this.primaryKey = "id";
         this.connection = connection;
         this.namesOfStrings = createNamesOfStrings();
-        this.idGenerator = new UsersIdGeneratorImpl(connection);
+        this.numOfPrimaryKey = getNumOfLine(primaryKey);
+        this.idGenerator = new IdGeneratorIntegerImpl(connection, tableName, primaryKey, numOfPrimaryKey);
     }
 
     @Override

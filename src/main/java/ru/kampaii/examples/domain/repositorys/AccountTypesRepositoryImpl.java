@@ -1,7 +1,7 @@
 package ru.kampaii.examples.domain.repositorys;
 
 import ru.kampaii.examples.domain.entities.AccountTypesEntity;
-import ru.kampaii.examples.domain.idGenerators.AccountTypesIdGeneratorImpl;
+import ru.kampaii.examples.domain.idGenerators.IdGeneratorIntegerImpl;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -14,7 +14,8 @@ public class AccountTypesRepositoryImpl extends Repository<AccountTypesEntity, I
         this.primaryKey = "id";
         this.connection = connection;
         this.namesOfStrings = createNamesOfStrings();
-        this.idGenerator = new AccountTypesIdGeneratorImpl(connection);
+        this.numOfPrimaryKey = getNumOfLine(primaryKey);
+        this.idGenerator = new IdGeneratorIntegerImpl(connection, tableName, primaryKey, numOfPrimaryKey);
     }
 
     @Override
