@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class Main {
     public static void main(String[] args) throws SQLException {
         UsersRepositoryImpl rep = new UsersRepositoryImpl(DatabaseConnectorProvider.connect());
-        UsersEntity entity = new UsersEntity(null, "'blalal'", 0F);
+        UsersEntity entity = new UsersEntity(null, "'al'", 1F);
         rep.create(entity);
     }
 }
