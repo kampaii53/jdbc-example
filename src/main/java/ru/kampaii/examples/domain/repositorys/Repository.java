@@ -113,7 +113,7 @@ public abstract class Repository<T extends Entity, ID> {
                 update += namesOfStrings.get(i) + "=" + data.get(namesOfStrings.get(i));
             }
         }
-        update += " WHERE " + primaryKey + "=" + data.get(numOfPrimaryKey) + ";";
+        update += " WHERE " + primaryKey + "=" + data.get(primaryKey) + ";";
         try {
             execute(update);
         } catch (SQLException e) {
@@ -122,7 +122,7 @@ public abstract class Repository<T extends Entity, ID> {
         return getById((ID) data.get(numOfPrimaryKey));
     }
 
-    private ResultSet executeQuery(String request) throws SQLException {
+    public ResultSet executeQuery(String request) throws SQLException {
         var statement = connection.createStatement();
         var result = statement.executeQuery(request);
         return result;

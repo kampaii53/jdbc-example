@@ -1,7 +1,7 @@
 package ru.kampaii.examples.domain.repositorys;
 
 import ru.kampaii.examples.domain.entities.UsersSettingEntity;
-import ru.kampaii.examples.domain.idGenerators.IdGeneratorIntegerImpl;
+import ru.kampaii.examples.domain.idGenerators.IdGenerator;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -9,13 +9,13 @@ import java.util.Map;
 
 public class UsersSettingRepositoryImpl extends Repository<UsersSettingEntity, Integer> {
 
-    public UsersSettingRepositoryImpl(Connection connection) {
+    public UsersSettingRepositoryImpl(Connection connection, IdGenerator idGenerator) {
         this.tableName = "users_settings";
         this.primaryKey = "user_id";
         this.connection = connection;
         this.namesOfStrings = createNamesOfStrings();
         this.numOfPrimaryKey = getNumOfLine(primaryKey);
-        this.idGenerator = new IdGeneratorIntegerImpl(connection, tableName, primaryKey, numOfPrimaryKey);
+        this.idGenerator = idGenerator;
     }
 
     @Override
