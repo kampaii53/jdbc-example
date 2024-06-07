@@ -17,7 +17,7 @@ public class IdGeneratorIntegerImpl extends IdGenerator<Integer> {
         try (var statement = connection.createStatement()) {
             var results = statement.executeQuery("SELECT MAX(" + primaryKey + ") FROM " + tableName);
             if (results.next()) {
-                maxNum = Integer.valueOf(String.valueOf(results.getInt(1)));
+                maxNum = results.getInt(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
