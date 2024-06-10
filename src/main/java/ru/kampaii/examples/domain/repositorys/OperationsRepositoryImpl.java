@@ -31,7 +31,7 @@ public class OperationsRepositoryImpl extends Repository<OperationsEntity, Integ
 
     @Override
     OperationsEntity makeT(Map<String, Object> data) {
-        return new OperationsEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), Integer.valueOf((String) data.get(namesOfStrings.get(1))), Float.valueOf((String) data.get(namesOfStrings.get(2))), ((String) data.get(namesOfStrings.get(3))), Integer.valueOf((String) data.get(namesOfStrings.get(4))));
+        return new OperationsEntity((Integer) data.get(namesOfStrings.get(0)), (Integer) data.get(namesOfStrings.get(1)), (Float) data.get(namesOfStrings.get(2)), (String) data.get(namesOfStrings.get(3)), (Integer) data.get(namesOfStrings.get(4)));
     }
 
 }

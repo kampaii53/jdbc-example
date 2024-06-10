@@ -20,7 +20,7 @@ public class SettingsRepositoryImpl extends Repository<SettingsEntity, Integer> 
 
     @Override
     SettingsEntity makeT(Map<String, Object> data) {
-        return new SettingsEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), ((String) data.get(namesOfStrings.get(1))));
+        return new SettingsEntity((Integer) data.get(namesOfStrings.get(0)), (String) data.get(namesOfStrings.get(1)));
     }
 
     @Override

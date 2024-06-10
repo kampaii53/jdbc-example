@@ -30,7 +30,7 @@ public class AccountsRepositoryImpl extends Repository<AccountsEntity, Integer> 
 
     @Override
     AccountsEntity makeT(Map<String, Object> data) {
-        return new AccountsEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), Float.valueOf((String) data.get(namesOfStrings.get(1))), Integer.valueOf((String) data.get(namesOfStrings.get(2))), Integer.valueOf((String) data.get(namesOfStrings.get(3))));
+        return new AccountsEntity((Integer) data.get(namesOfStrings.get(0)), (Float) data.get(namesOfStrings.get(1)), (Integer) data.get(namesOfStrings.get(2)), (Integer) data.get(namesOfStrings.get(3)));
     }
 
 }

@@ -28,7 +28,7 @@ public class OperationsAppliedSettingsRepositoryImpl extends Repository<Operatio
 
     @Override
     OperationsAppliedSettingsEntity makeT(Map<String, Object> data) {
-        return new OperationsAppliedSettingsEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), Integer.valueOf((String) data.get(namesOfStrings.get(1))));
+        return new OperationsAppliedSettingsEntity((Integer) data.get(namesOfStrings.get(0)), (Integer) data.get(namesOfStrings.get(1)));
     }
 
 }
