@@ -18,7 +18,7 @@ public abstract class Repository<T extends Entity, ID> {
     String primaryKey;
     List<String> namesOfStrings;
     Connection connection;
-    IdGenerator idGenerator;
+    IdGenerator<ID> idGenerator;
     Integer numOfPrimaryKey;
 
     /**
@@ -92,6 +92,21 @@ public abstract class Repository<T extends Entity, ID> {
         String update = "DELETE FROM " + tableName + " WHERE " + primaryKey + "=" + id + ";";
         try {
             execute(update);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Получить count по таблице
+     */
+    public int count() {
+        try {
+            var result = executeQuery("SELECT count(*) from " + tableName);
+            if (result.next()) {
+                return result.getInt(1);
+            }
+            throw new RuntimeException("Count failed");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
