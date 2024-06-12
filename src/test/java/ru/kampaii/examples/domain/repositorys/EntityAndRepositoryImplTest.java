@@ -5,6 +5,7 @@ import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
 import ru.kampaii.examples.domain.idGenerators.IdGeneratorIntegerImpl;
+import ru.kampaii.examples.domain.idGenerators.PooledIdGeneratorImpl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,17 +18,23 @@ class EntityAndRepositoryImplTest {
 
     Random random = new Random();
 
-    // отрабатывает 11 минут у Тимура
+    // отрабатывает 8 минут у Тимура
     @Test
     void testInsertsWithIdGenerator() throws SQLException {
-
         Connection connection = DatabaseConnectorProvider.connect();
         UsersRepositoryImpl usersRepository = new UsersRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "users", "id", 1));
         AccountsRepositoryImpl accountsRepository = new AccountsRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "accounts", "number", 1));
-
         executeScripts(1000, 5, usersRepository, accountsRepository);
     }
 
+    // отрабатывает 5 минут у Тимура
+    @Test
+    void EntityAndRepositoryImpl() throws SQLException {
+        Connection connection = DatabaseConnectorProvider.connect();
+        UsersRepositoryImpl usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+        AccountsRepositoryImpl accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+        executeScripts(1000, 5, usersRepository, accountsRepository);
+    }
 
     private void executeScripts(
             int userCount,

@@ -80,7 +80,7 @@ public abstract class Repository<T extends Entity, ID> {
             e.printStackTrace();
 
         }
-        return getById(id);
+        return makeT(data);
     }
 
     /**

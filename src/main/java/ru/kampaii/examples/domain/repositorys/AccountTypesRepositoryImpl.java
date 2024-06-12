@@ -20,7 +20,7 @@ public class AccountTypesRepositoryImpl extends Repository<AccountTypesEntity, I
 
     @Override
     AccountTypesEntity makeT(Map<String, Object> data) {
-        return new AccountTypesEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), ((String) data.get(namesOfStrings.get(1))));
+        return new AccountTypesEntity((Integer) data.get(namesOfStrings.get(0)), (String) data.get(namesOfStrings.get(1)));
     }
 
     @Override

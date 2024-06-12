@@ -28,7 +28,7 @@ public class UsersSettingRepositoryImpl extends Repository<UsersSettingEntity, I
 
     @Override
     UsersSettingEntity makeT(Map<String, Object> data) {
-        return new UsersSettingEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), Integer.valueOf((String) data.get(namesOfStrings.get(1))));
+        return new UsersSettingEntity((Integer) data.get(namesOfStrings.get(0)), (Integer) data.get(namesOfStrings.get(1)));
     }
 
 }

@@ -29,7 +29,7 @@ public class UsersRepositoryImpl extends Repository<UsersEntity, Integer> {
 
     @Override
     UsersEntity makeT(Map<String, Object> data) {
-        return new UsersEntity(Integer.valueOf((String) data.get(namesOfStrings.get(0))), ((String) data.get(namesOfStrings.get(1))), Float.valueOf((String) data.get(namesOfStrings.get(2))));
+        return new UsersEntity((Integer) data.get(namesOfStrings.get(0)), ((String) data.get(namesOfStrings.get(1))), (Float) data.get(namesOfStrings.get(2)));
     }
 
 }
