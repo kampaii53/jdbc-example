@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 
 public class PooledIdGeneratorImpl extends IdGenerator<Integer> {
-    private static final Logger logger = LoggerFactory.getLogger(PooledIdGeneratorImpl.class);
+    static final Logger log = LoggerFactory.getLogger(PooledIdGeneratorImpl.class);
     Integer dequeSize;
     private final LinkedList<Integer> listOfId;
 
@@ -36,7 +36,7 @@ public class PooledIdGeneratorImpl extends IdGenerator<Integer> {
             for (int i = 0; i < dequeSize; i++) {
                 listOfId.add(maxNum + i + 1);
             }
-            logger.info("New select sql in " + tableName);
+            log.info("New select sql in " + tableName);
         }
         return listOfId.pop();
     }
