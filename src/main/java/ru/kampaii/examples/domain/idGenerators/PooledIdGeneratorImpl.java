@@ -1,14 +1,18 @@
 package ru.kampaii.examples.domain.idGenerators;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
-public class IdGeneratorOptimisedImpl extends IdGenerator<Integer> {
+public class PooledIdGeneratorImpl extends IdGenerator<Integer> {
+    private static final Logger logger = LoggerFactory.getLogger(PooledIdGeneratorImpl.class);
     Integer dequeSize;
     private final LinkedList<Integer> listOfId;
 
-    public IdGeneratorOptimisedImpl(Connection connection, String tableName, String primaryKey, Integer numOfPrimaryKey, Integer dequeSize) {
+    public PooledIdGeneratorImpl(Connection connection, String tableName, String primaryKey, Integer numOfPrimaryKey, Integer dequeSize) {
         this.connection = connection;
         this.tableName = tableName;
         this.primaryKey = primaryKey;
@@ -19,7 +23,7 @@ public class IdGeneratorOptimisedImpl extends IdGenerator<Integer> {
 
     @Override
     public Integer makeNewId() {
-        if (true) {
+        if (listOfId.size() == 0) {
             int maxNum = 0;
             try (var statement = connection.createStatement()) {
                 var results = statement.executeQuery("SELECT MAX(" + primaryKey + ") FROM " + tableName);
@@ -32,6 +36,7 @@ public class IdGeneratorOptimisedImpl extends IdGenerator<Integer> {
             for (int i = 0; i < dequeSize; i++) {
                 listOfId.add(maxNum + i + 1);
             }
+            logger.info("New select sql in " + tableName);
         }
         return listOfId.pop();
     }
