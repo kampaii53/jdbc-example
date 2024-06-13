@@ -21,7 +21,6 @@ class EntityAndRepositoryImplTest {
 
     static final int USERS_COUNT = 1000;
     static final int ACCS_PER_USER = 5;
-
     private Connection connection;
     private Repository<UsersEntity, Integer> usersRepository;
     private Repository<AccountsEntity, Integer> accountsRepository;
@@ -40,7 +39,6 @@ class EntityAndRepositoryImplTest {
     // отрабатывает 8 минут у Тимура
     @Test
     void testInsertsWithIdGenerator() {
-
         usersRepository = new UsersRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "users", "id", 1));
         accountsRepository = new AccountsRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "accounts", "number", 1));
         executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
@@ -52,6 +50,17 @@ class EntityAndRepositoryImplTest {
         usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
         executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
+    }
+
+    @Test
+    void EntityAndPreparedRepositoryImpl() {
+        try {
+            usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+            accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+            executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void executeTest(
@@ -71,10 +80,18 @@ class EntityAndRepositoryImplTest {
     private void singleThreadCreation() {
         for (int i = 0; i < USERS_COUNT; i++) {
             UsersEntity entity = new UsersEntity(null, String.valueOf(random.nextInt(0, 10000)), 0F);
-            entity = usersRepository.create(entity);
+            try {
+                entity = usersRepository.create(entity);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             int userId = entity.getId();
             for (int j = 0; j < ACCS_PER_USER; j++) {
-                accountsRepository.create(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
+                try {
+                    accountsRepository.create(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
