@@ -22,10 +22,10 @@ public class UsersRepositoryPreparedImpl extends UsersRepositoryImpl {
         Integer id = makeNewId();
         Map<String, Object> data = getData(object);
         data.put(primaryKey, id);
-        statement.setInt(1, (Integer) data.get(namesOfStrings.get(0)));
-        statement.setString(2, (String) data.get(namesOfStrings.get(1)));
-        statement.setFloat(3, (Float) data.get(namesOfStrings.get(2)));
+        statement.setInt(1, id);
+        statement.setString(2, object.getName());
+        statement.setFloat(3, object.getTotalBalance());
         statement.executeUpdate();
-        return makeT(data);
+        return new UsersEntity(id, object.getName(), object.getTotalBalance());
     }
 }

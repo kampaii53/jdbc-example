@@ -38,7 +38,7 @@ class EntityAndRepositoryImplTest {
 
     // отрабатывает 8 минут у Тимура
     @Test
-    void testInsertsWithIdGenerator() {
+    void testInsertsWithCommonIdGenerator() {
         usersRepository = new UsersRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "users", "id", 1));
         accountsRepository = new AccountsRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "accounts", "number", 1));
         executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
@@ -46,14 +46,14 @@ class EntityAndRepositoryImplTest {
 
     // отрабатывает 5 минут у Тимура
     @Test
-    void EntityAndRepositoryImpl() {
+    void EntityAndRepositoryWithPooledGeneratorImpl() {
         usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
         executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
     }
 
     @Test
-    void EntityAndPreparedRepositoryImpl() {
+    void EntityAndPreparedRepositoryWithPooledGeneratorImpl() {
         try {
             usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
             accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));

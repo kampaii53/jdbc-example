@@ -6,7 +6,6 @@ import ru.kampaii.examples.domain.idGenerators.IdGenerator;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Map;
 
 public class AccountsRepositoryPreparedImpl extends AccountsRepositoryImpl {
     PreparedStatement statement;
@@ -19,13 +18,11 @@ public class AccountsRepositoryPreparedImpl extends AccountsRepositoryImpl {
     @Override
     public AccountsEntity create(AccountsEntity object) throws SQLException {
         Integer id = makeNewId();
-        Map<String, Object> data = getData(object);
-        data.put(primaryKey, id);
-        statement.setInt(1, (Integer) data.get(namesOfStrings.get(0)));
-        statement.setFloat(2, (Float) data.get(namesOfStrings.get(1)));
-        statement.setInt(3, (Integer) data.get(namesOfStrings.get(2)));
-        statement.setInt(4, (Integer) data.get(namesOfStrings.get(3)));
+        statement.setInt(1, id);
+        statement.setFloat(2, object.getBalance());
+        statement.setInt(3, object.getType());
+        statement.setInt(4, object.getUserId());
         statement.executeUpdate();
-        return makeT(data);
+        return new AccountsEntity(id, object.getBalance(), object.getType(), object.getUserId());
     }
 }
