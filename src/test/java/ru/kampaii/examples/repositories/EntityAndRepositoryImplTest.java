@@ -87,9 +87,9 @@ class EntityAndRepositoryImplTest {
     private void transactionalWrapper() {
         try {
             connection.setAutoCommit(false);
-            connection.beginRequest();
             singleThreadCreation();
             connection.commit();
+            connection.setAutoCommit(true);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
