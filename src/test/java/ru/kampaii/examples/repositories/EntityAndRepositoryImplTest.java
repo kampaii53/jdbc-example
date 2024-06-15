@@ -46,21 +46,17 @@ class EntityAndRepositoryImplTest {
 
     // отрабатывает 5 минут у Тимура
     @Test
-    void EntityAndRepositoryWithPooledGeneratorImpl() {
+    void entityAndRepositoryWithPooledGeneratorImpl() {
         usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
         executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
     }
 
     @Test
-    void EntityAndPreparedRepositoryWithPooledGeneratorImpl() {
-        try {
+    void entityAndPreparedRepositoryWithPooledGeneratorImpl() throws SQLException {
             usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
             accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
             executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
