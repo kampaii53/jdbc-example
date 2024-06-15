@@ -88,14 +88,15 @@ class EntityAndRepositoryImplTest {
     private void transactionalWrapper() {
         Statement statement;
         try {
-            statement = connection.createStatement();
-            statement.execute("BEGIN");
+            connection.setAutoCommit(false);
+            connection.beginRequest();
             singleThreadCreation();
-            statement.execute("COMMIT");
+            connection.commit();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
     private void singleThreadCreation() {
         for (int i = 0; i < USERS_COUNT; i++) {
             UsersEntity entity = new UsersEntity(null, String.valueOf(random.nextInt(0, 10000)), 0F);
