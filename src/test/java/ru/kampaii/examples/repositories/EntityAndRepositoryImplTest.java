@@ -11,6 +11,7 @@ import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,6 +64,13 @@ class EntityAndRepositoryImplTest {
         }
     }
 
+    @Test
+    void transactionalEntityAndPreparedRepositoryWithPooledGeneratorImpl() throws SQLException {
+        usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+        accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+        executeTest(usersRepository, accountsRepository, this::transactionalWrapper);
+    }
+
     private void executeTest(
             Repository<UsersEntity, Integer> usersRepository,
             Repository<AccountsEntity, Integer> accountsRepository,
@@ -77,6 +85,17 @@ class EntityAndRepositoryImplTest {
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
     }
 
+    private void transactionalWrapper() {
+        Statement statement;
+        try {
+            statement = connection.createStatement();
+            statement.execute("BEGIN");
+            singleThreadCreation();
+            statement.execute("COMMIT");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private void singleThreadCreation() {
         for (int i = 0; i < USERS_COUNT; i++) {
             UsersEntity entity = new UsersEntity(null, String.valueOf(random.nextInt(0, 10000)), 0F);
