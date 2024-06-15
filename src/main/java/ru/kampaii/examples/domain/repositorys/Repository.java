@@ -29,7 +29,7 @@ public abstract class Repository<T extends Entity, ID> {
      */
     public T getById(ID id) {
         Map<String, Object> representList = new HashMap<>();
-        ResultSet results = null;
+        ResultSet results;
         try {
             results = executeQuery("SELECT * FROM " + tableName + " WHERE " + primaryKey + "=" + id + ";");
             while (results.next()) {
@@ -53,7 +53,7 @@ public abstract class Repository<T extends Entity, ID> {
      * @param object обьект без заданного id
      * @return результат сохранения с получившимся id
      */
-    public T create(T object) {
+    public T create(T object) throws SQLException {
         ID id = makeNewId();
         Map<String, Object> data = getData(object);
         data.put(primaryKey, id);
@@ -139,8 +139,7 @@ public abstract class Repository<T extends Entity, ID> {
 
     public ResultSet executeQuery(String request) throws SQLException {
         var statement = connection.createStatement();
-        var result = statement.executeQuery(request);
-        return result;
+        return statement.executeQuery(request);
     }
 
     private void execute(String request) throws SQLException {
@@ -148,8 +147,8 @@ public abstract class Repository<T extends Entity, ID> {
         statement.execute(request);
     }
 
-    public List createNamesOfStrings() {
-        List<String> names = new ArrayList();
+    public List<String> createNamesOfStrings() {
+        List<String> names = new ArrayList<>();
         try (var statement = connection.createStatement()) {
             ResultSet results = statement.executeQuery("SELECT * FROM " + tableName);
             ResultSetMetaData metaData = results.getMetaData();
@@ -177,7 +176,7 @@ public abstract class Repository<T extends Entity, ID> {
     }
 
     ID makeNewId() {
-        return (ID) idGenerator.makeNewId();
+        return idGenerator.makeNewId();
     }
 
     abstract Map<String, Object> getData(T object);
