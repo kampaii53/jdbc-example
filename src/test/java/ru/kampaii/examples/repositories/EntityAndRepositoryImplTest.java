@@ -11,7 +11,6 @@ import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,7 +85,6 @@ class EntityAndRepositoryImplTest {
     }
 
     private void transactionalWrapper() {
-        Statement statement;
         try {
             connection.setAutoCommit(false);
             connection.beginRequest();
