@@ -1,7 +1,7 @@
-package ru.kampaii.examples.domain.repositorys;
+package ru.kampaii.examples.repositories;
 
 import ru.kampaii.examples.domain.entities.UsersSettingEntity;
-import ru.kampaii.examples.domain.idGenerators.IdGenerator;
+import ru.kampaii.examples.repositories.id.generators.IdGenerator;
 
 import java.sql.Connection;
 import java.util.HashMap;

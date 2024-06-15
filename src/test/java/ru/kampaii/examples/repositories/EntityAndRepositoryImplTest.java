@@ -1,4 +1,4 @@
-package ru.kampaii.examples.domain.repositorys;
+package ru.kampaii.examples.repositories;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
-import ru.kampaii.examples.domain.idGenerators.IdGeneratorIntegerImpl;
-import ru.kampaii.examples.domain.idGenerators.PooledIdGeneratorImpl;
+import ru.kampaii.examples.repositories.id.generators.IdGeneratorIntegerImpl;
+import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
 
 import java.sql.Connection;
 import java.sql.SQLException;

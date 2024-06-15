@@ -1,4 +1,4 @@
-package ru.kampaii.examples.domain.idGenerators;
+package ru.kampaii.examples.repositories.id.generators;
 
 import java.sql.Connection;
 
