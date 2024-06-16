@@ -59,6 +59,13 @@ class EntityAndRepositoryImplTest {
             executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
     }
 
+    @Test
+    void transactionalEntityAndPreparedRepositoryWithPooledGeneratorImpl() throws SQLException {
+        usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+        accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+        executeTest(usersRepository, accountsRepository, this::transactionalWrapper);
+    }
+
     private void executeTest(
             Repository<UsersEntity, Integer> usersRepository,
             Repository<AccountsEntity, Integer> accountsRepository,
@@ -71,6 +78,17 @@ class EntityAndRepositoryImplTest {
 
         assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
+    }
+
+    private void transactionalWrapper() {
+        try {
+            connection.setAutoCommit(false);
+            singleThreadCreation();
+            connection.commit();
+            connection.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void singleThreadCreation() {
