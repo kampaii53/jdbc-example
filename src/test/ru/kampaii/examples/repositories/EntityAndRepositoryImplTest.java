@@ -14,7 +14,6 @@ import ru.kampaii.examples.services.UserServiceTransactional;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -47,14 +46,14 @@ class EntityAndRepositoryImplTest {
 
     // отрабатывает 5 минут у Тимура
     @Test
-    void EntityAndRepositoryWithPooledGeneratorImpl() {
+    void  entityAndRepositoryWithPooledGeneratorImpl() {
         usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
         executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
     }
 
     @Test
-    void EntityAndPreparedRepositoryWithPooledGeneratorImpl() {
+    void entityAndPreparedRepositoryWithPooledGeneratorImpl() {
         try {
         usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
@@ -71,7 +70,7 @@ class EntityAndRepositoryImplTest {
         executeTest(usersRepository, accountsRepository, new UserServiceTransactional(usersRepository, accountsRepository, connection));
     }
 
-    private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, UserService userService) {
+    private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, UserService<UsersEntity> userService) {
         int firstAccountsCount = accountsRepository.count();
         int firstUsersCount = usersRepository.count();
         for (int i = 0; i < USERS_COUNT; i++) {
