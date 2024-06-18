@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
+import ru.kampaii.examples.domain.entities.Entity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
 import ru.kampaii.examples.repositories.id.generators.IdGeneratorIntegerImpl;
 import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
@@ -79,6 +80,34 @@ class EntityAndRepositoryImplTest {
         }
         assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
+    }
+
+    @Test
+    void userServiceTest() throws SQLException {
+        String name = "TEST";
+        usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+        accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+        int firstAccountsCount = accountsRepository.count();
+        int firstUsersCount = usersRepository.count();
+        Service service=new UserServiceCommon(usersRepository, accountsRepository);
+        UsersEntity entity= (UsersEntity) service.createUser(name,5);
+        assertEquals(name,entity.getName());
+        assertEquals(5, accountsRepository.count() - firstAccountsCount);
+        assertEquals(1, usersRepository.count() - firstUsersCount);
+    }
+
+    @Test
+    void userServiceTransTest() throws SQLException {
+        String name = "TEST";
+        usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+        accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+        int firstAccountsCount = accountsRepository.count();
+        int firstUsersCount = usersRepository.count();
+        Service service=new UserServiceTransactional(usersRepository, accountsRepository,connection);
+        UsersEntity entity= (UsersEntity) service.createUser(name,5);
+        assertEquals(name,entity.getName());
+        assertEquals(5, accountsRepository.count() - firstAccountsCount);
+        assertEquals(1, usersRepository.count() - firstUsersCount);
     }
 
 }

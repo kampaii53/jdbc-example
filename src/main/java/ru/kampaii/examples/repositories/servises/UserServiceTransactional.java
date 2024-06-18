@@ -23,7 +23,7 @@ public class UserServiceTransactional implements Service {
     }
 
     @Override
-    public Entity createUser(String name, Integer numOfAcc) {
+    public UsersEntity createUser(String name, Integer numOfAcc) {
         try {
             connection.setAutoCommit(false);
             UsersEntity entity = new UsersEntity(null, name, 0F);
