@@ -15,6 +15,8 @@ import ru.kampaii.examples.repositories.servises.UserServiceTransactional;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,6 +72,29 @@ class EntityAndRepositoryImplTest {
         usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
         executeTest(usersRepository, accountsRepository, new UserServiceTransactional(usersRepository, accountsRepository, connection));
+    }
+
+    @Test
+    void EntityAndRepositoryCreateBunch() throws SQLException {
+        Random random= new Random();
+        usersRepository = new UsersRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1, 10000));
+        List<UsersEntity> usersData = new ArrayList<>();
+        accountsRepository = new AccountsRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "accounts", "number", 1, 10000));
+        List<AccountsEntity> acsData = new ArrayList<>();
+        for (int i = 0; i <USERS_COUNT; i++) {
+            UsersEntity entity = new UsersEntity(null, String.valueOf(i), 0F);
+            usersData.add(entity);
+        }
+        List<UsersEntity> listOfUsersEntities=usersRepository.createBunch(usersData);
+        for (int i = 0; i <USERS_COUNT; i++) {
+            UsersEntity entity=listOfUsersEntities.get(i);
+            int userId = entity.getId();
+            for (int j = 0; j < ACCS_PER_USER; j++) {
+                acsData.add (new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
+            }
+        }
+        accountsRepository.createBunch(acsData);
+
     }
 
     private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, Service<UsersEntity> userService) {

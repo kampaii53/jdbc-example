@@ -83,6 +83,51 @@ public abstract class Repository<T extends Entity, ID> {
         return makeT(data);
     }
 
+    public List<T> createBunch(List<T> list) throws SQLException {
+        List<Map> allData=new ArrayList<>();
+        for (int i = 0; i <list.size() ; i++) {
+            ID id = makeNewId();
+            Map<String, Object> data = getData(list.get(i));
+            data.put(primaryKey, id);
+            allData.add(data);
+        }
+        try {
+            String insert = "INSERT INTO " + tableName + " (";
+            for (int i = 0; i < namesOfStrings.size(); i++) {
+                if (i != namesOfStrings.size() - 1) {
+                    insert += namesOfStrings.get(i) + ",";
+                } else {
+                    insert += namesOfStrings.get(i);
+                }
+
+            }
+            insert += ") VALUES ";
+            for (int i = 0; i <allData.size() ; i++) {
+                insert+="( ";
+                Map<String, Object> data=allData.get(i);
+                for (int j = 0; j < namesOfStrings.size(); j++) {
+                    if (j != namesOfStrings.size() - 1) {
+                        insert += data.get(namesOfStrings.get(j)) + ",";
+                    } else {
+                        insert += data.get(namesOfStrings.get(j)) + "),";
+                    }
+                }
+            }
+            insert=insert.substring(0,insert.length()-1);
+            insert+=";";
+            System.out.println(insert);
+            execute(insert);
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+        List<T> finalData= new ArrayList<>();
+        for (int i = 0; i <allData.size() ; i++) {
+            finalData.add((T) makeT(allData.get(i)));
+        }
+        return finalData;
+    }
+
     /**
      * удаление по id
      *
