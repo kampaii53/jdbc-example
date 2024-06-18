@@ -8,6 +8,9 @@ import ru.kampaii.examples.domain.entities.AccountsEntity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
 import ru.kampaii.examples.repositories.id.generators.IdGeneratorIntegerImpl;
 import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
+import ru.kampaii.examples.repositories.servises.Service;
+import ru.kampaii.examples.repositories.servises.UserServiceCommon;
+import ru.kampaii.examples.repositories.servises.UserServiceTransactional;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -16,8 +19,6 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EntityAndRepositoryImplTest {
-
-    Random random = new Random();
 
     static final int USERS_COUNT = 1000;
     static final int ACCS_PER_USER = 5;
@@ -41,73 +42,43 @@ class EntityAndRepositoryImplTest {
     void testInsertsWithCommonIdGenerator() {
         usersRepository = new UsersRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "users", "id", 1));
         accountsRepository = new AccountsRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "accounts", "number", 1));
-        executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
+        executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
     }
 
     // отрабатывает 5 минут у Тимура
     @Test
-    void entityAndRepositoryWithPooledGeneratorImpl() {
+    void  entityAndRepositoryWithPooledGeneratorImpl() {
         usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
-        executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
+        executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
     }
 
     @Test
-    void entityAndPreparedRepositoryWithPooledGeneratorImpl() throws SQLException {
+    void entityAndPreparedRepositoryWithPooledGeneratorImpl() {
+        try {
             usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
             accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
-            executeTest(usersRepository, accountsRepository, this::singleThreadCreation);
+            executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
     void transactionalEntityAndPreparedRepositoryWithPooledGeneratorImpl() throws SQLException {
         usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
-        executeTest(usersRepository, accountsRepository, this::transactionalWrapper);
+        executeTest(usersRepository, accountsRepository, new UserServiceTransactional(usersRepository, accountsRepository, connection));
     }
 
-    private void executeTest(
-            Repository<UsersEntity, Integer> usersRepository,
-            Repository<AccountsEntity, Integer> accountsRepository,
-            Runnable runnable
-    ) {
+    private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, Service<UsersEntity> userService) {
         int firstAccountsCount = accountsRepository.count();
         int firstUsersCount = usersRepository.count();
-
-        runnable.run();
-
+        for (int i = 0; i < USERS_COUNT; i++) {
+            userService.createUser(String.valueOf(i), ACCS_PER_USER);
+        }
         assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
-    }
-
-    private void transactionalWrapper() {
-        try {
-            connection.setAutoCommit(false);
-            singleThreadCreation();
-            connection.commit();
-            connection.setAutoCommit(true);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void singleThreadCreation() {
-        for (int i = 0; i < USERS_COUNT; i++) {
-            UsersEntity entity = new UsersEntity(null, String.valueOf(random.nextInt(0, 10000)), 0F);
-            try {
-                entity = usersRepository.create(entity);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            int userId = entity.getId();
-            for (int j = 0; j < ACCS_PER_USER; j++) {
-                try {
-                    accountsRepository.create(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
     }
 
 }
