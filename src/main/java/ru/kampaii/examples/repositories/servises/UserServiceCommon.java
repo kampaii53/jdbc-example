@@ -7,11 +7,11 @@ import ru.kampaii.examples.repositories.Repository;
 import java.sql.SQLException;
 import java.util.Random;
 
-public class UserServiceCommon implements Service<UsersEntity> {
+public class UserServiceCommon implements UserService {
 
-    private Repository<UsersEntity, Integer> usersRepository;
-    private Repository<AccountsEntity, Integer> accountsRepository;
-    private Random random;
+    private final Repository<UsersEntity, Integer> usersRepository;
+    private final Repository<AccountsEntity, Integer> accountsRepository;
+    private final Random random;
 
     public UserServiceCommon(Repository usersRepository, Repository accountsRepository) {
         this.usersRepository = usersRepository;

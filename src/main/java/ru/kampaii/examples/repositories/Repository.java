@@ -3,10 +3,7 @@ package ru.kampaii.examples.repositories;
 import ru.kampaii.examples.domain.entities.Entity;
 import ru.kampaii.examples.repositories.id.generators.IdGenerator;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,8 +81,8 @@ public abstract class Repository<T extends Entity, ID> {
     }
 
     public List<T> createBunch(List<T> list) throws SQLException {
-        List<Map> allData=new ArrayList<>();
-        for (int i = 0; i <list.size() ; i++) {
+        List<Map> allData = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
             ID id = makeNewId();
             Map<String, Object> data = getData(list.get(i));
             data.put(primaryKey, id);
@@ -102,27 +99,33 @@ public abstract class Repository<T extends Entity, ID> {
 
             }
             insert += ") VALUES ";
-            for (int i = 0; i <allData.size() ; i++) {
-                insert+="( ";
-                Map<String, Object> data=allData.get(i);
+            for (int i = 0; i < allData.size(); i++) {
+                insert += "( ";
+                Map<String, Object> data = allData.get(i);
                 for (int j = 0; j < namesOfStrings.size(); j++) {
                     if (j != namesOfStrings.size() - 1) {
-                        insert += data.get(namesOfStrings.get(j)) + ",";
+                        insert += "?" + ",";
                     } else {
-                        insert += data.get(namesOfStrings.get(j)) + "),";
+                        insert += "?" + "),";
                     }
                 }
             }
-            insert=insert.substring(0,insert.length()-1);
-            insert+=";";
-            System.out.println(insert);
-            execute(insert);
+            insert = insert.substring(0, insert.length() - 1);
+            insert += ";";
+            PreparedStatement statement = connection.prepareStatement(insert);
+            for (int i = 0; i < allData.size(); i++) {
+                Map<String, Object> data = allData.get(i);
+                for (int j = 0; j < namesOfStrings.size(); j++) {
+                    statement.setObject(1 + i * namesOfStrings.size() + j, data.get(namesOfStrings.get(j)));
+                }
+            }
+            statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
 
         }
-        List<T> finalData= new ArrayList<>();
-        for (int i = 0; i <allData.size() ; i++) {
+        List<T> finalData = new ArrayList<>();
+        for (int i = 0; i < allData.size(); i++) {
             finalData.add((T) makeT(allData.get(i)));
         }
         return finalData;

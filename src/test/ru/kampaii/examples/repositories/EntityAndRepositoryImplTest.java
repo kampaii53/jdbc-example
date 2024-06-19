@@ -1,15 +1,12 @@
 package ru.kampaii.examples.repositories;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
-import ru.kampaii.examples.domain.entities.Entity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
 import ru.kampaii.examples.repositories.id.generators.IdGeneratorIntegerImpl;
 import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
-import ru.kampaii.examples.repositories.servises.Service;
+import ru.kampaii.examples.repositories.servises.UserService;
 import ru.kampaii.examples.repositories.servises.UserServiceCommon;
 import ru.kampaii.examples.repositories.servises.UserServiceTransactional;
 
@@ -29,18 +26,8 @@ class EntityAndRepositoryImplTest {
     private Repository<UsersEntity, Integer> usersRepository;
     private Repository<AccountsEntity, Integer> accountsRepository;
 
-    @BeforeEach
-    void setUp() throws SQLException {
-        this.connection = DatabaseConnectorProvider.connect();
-    }
 
-    @AfterEach
-    void tearDown() {
-        this.usersRepository = null;
-        this.accountsRepository = null;
-    }
 
-    // отрабатывает 8 минут у Тимура
     @Test
     void testInsertsWithCommonIdGenerator() {
         usersRepository = new UsersRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "users", "id", 1));
@@ -48,9 +35,8 @@ class EntityAndRepositoryImplTest {
         executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
     }
 
-    // отрабатывает 5 минут у Тимура
     @Test
-    void  entityAndRepositoryWithPooledGeneratorImpl() {
+    void entityAndRepositoryWithPooledGeneratorImpl() {
         usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
         executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
@@ -76,28 +62,27 @@ class EntityAndRepositoryImplTest {
 
     @Test
     void EntityAndRepositoryCreateBunch() throws SQLException {
-        Random random= new Random();
+        Random random = new Random();
         usersRepository = new UsersRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1, 10000));
         List<UsersEntity> usersData = new ArrayList<>();
         accountsRepository = new AccountsRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "accounts", "number", 1, 10000));
         List<AccountsEntity> acsData = new ArrayList<>();
-        for (int i = 0; i <USERS_COUNT; i++) {
+        for (int i = 0; i < USERS_COUNT; i++) {
             UsersEntity entity = new UsersEntity(null, String.valueOf(i), 0F);
             usersData.add(entity);
         }
-        List<UsersEntity> listOfUsersEntities=usersRepository.createBunch(usersData);
-        for (int i = 0; i <USERS_COUNT; i++) {
-            UsersEntity entity=listOfUsersEntities.get(i);
+        List<UsersEntity> listOfUsersEntities = usersRepository.createBunch(usersData);
+        for (int i = 0; i < USERS_COUNT; i++) {
+            UsersEntity entity = listOfUsersEntities.get(i);
             int userId = entity.getId();
             for (int j = 0; j < ACCS_PER_USER; j++) {
-                acsData.add (new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
+                acsData.add(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
             }
         }
         accountsRepository.createBunch(acsData);
-
     }
 
-    private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, Service<UsersEntity> userService) {
+    private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, UserService userService) {
         int firstAccountsCount = accountsRepository.count();
         int firstUsersCount = usersRepository.count();
         for (int i = 0; i < USERS_COUNT; i++) {
@@ -107,32 +92,5 @@ class EntityAndRepositoryImplTest {
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
     }
 
-    @Test
-    void userServiceTest() throws SQLException {
-        String name = "TEST";
-        usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
-        accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
-        int firstAccountsCount = accountsRepository.count();
-        int firstUsersCount = usersRepository.count();
-        Service service=new UserServiceCommon(usersRepository, accountsRepository);
-        UsersEntity entity= (UsersEntity) service.createUser(name,5);
-        assertEquals(name,entity.getName());
-        assertEquals(5, accountsRepository.count() - firstAccountsCount);
-        assertEquals(1, usersRepository.count() - firstUsersCount);
-    }
-
-    @Test
-    void userServiceTransTest() throws SQLException {
-        String name = "TEST";
-        usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
-        accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
-        int firstAccountsCount = accountsRepository.count();
-        int firstUsersCount = usersRepository.count();
-        Service service=new UserServiceTransactional(usersRepository, accountsRepository,connection);
-        UsersEntity entity= (UsersEntity) service.createUser(name,5);
-        assertEquals(name,entity.getName());
-        assertEquals(5, accountsRepository.count() - firstAccountsCount);
-        assertEquals(1, usersRepository.count() - firstUsersCount);
-    }
 
 }

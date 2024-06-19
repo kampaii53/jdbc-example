@@ -1,7 +1,6 @@
 package ru.kampaii.examples.repositories.servises;
 
 import ru.kampaii.examples.domain.entities.AccountsEntity;
-import ru.kampaii.examples.domain.entities.Entity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
 import ru.kampaii.examples.repositories.Repository;
 
@@ -9,10 +8,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Random;
 
-public class UserServiceTransactional implements Service {
-    private Repository<UsersEntity, Integer> usersRepository;
-    private Repository<AccountsEntity, Integer> accountsRepository;
-    private Random random;
+public class UserServiceTransactional implements UserService {
+    private final Repository<UsersEntity, Integer> usersRepository;
+    private final Repository<AccountsEntity, Integer> accountsRepository;
+    private final Random random;
     Connection connection;
 
     public UserServiceTransactional(Repository usersRepository, Repository accountsRepository, Connection connection) {
