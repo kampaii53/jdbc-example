@@ -1,5 +1,7 @@
 package ru.kampaii.examples.repositories;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
@@ -27,6 +29,16 @@ class EntityAndRepositoryImplTest {
     private Repository<AccountsEntity, Integer> accountsRepository;
 
 
+    @BeforeEach
+    void setUp() throws SQLException {
+        this.connection = DatabaseConnectorProvider.connect();
+    }
+
+    @AfterEach
+    void tearDown() {
+        this.usersRepository = null;
+        this.accountsRepository = null;
+    }
 
     @Test
     void testInsertsWithCommonIdGenerator() {
@@ -61,7 +73,7 @@ class EntityAndRepositoryImplTest {
     }
 
     @Test
-    void EntityAndRepositoryCreateBunch() throws SQLException {
+    void entityAndRepositoryCreateBunch() throws SQLException {
         Random random = new Random();
         usersRepository = new UsersRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1, 10000));
         List<UsersEntity> usersData = new ArrayList<>();
@@ -91,6 +103,5 @@ class EntityAndRepositoryImplTest {
         assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
     }
-
 
 }
