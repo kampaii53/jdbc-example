@@ -78,6 +78,8 @@ class EntityAndRepositoryImplTest {
         usersRepository = new UsersRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1, 10000));
         List<UsersEntity> usersData = new ArrayList<>();
         accountsRepository = new AccountsRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "accounts", "number", 1, 10000));
+        int firstAccountsCount = accountsRepository.count();
+        int firstUsersCount = usersRepository.count();
         List<AccountsEntity> acsData = new ArrayList<>();
         for (int i = 0; i < USERS_COUNT; i++) {
             UsersEntity entity = new UsersEntity(null, String.valueOf(i), 0F);
@@ -92,6 +94,8 @@ class EntityAndRepositoryImplTest {
             }
         }
         accountsRepository.createBunch(acsData);
+        assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
+        assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
     }
 
     private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, UserService userService) {
