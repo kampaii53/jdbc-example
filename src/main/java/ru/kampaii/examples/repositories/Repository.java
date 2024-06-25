@@ -80,7 +80,7 @@ public abstract class Repository<T extends Entity, ID> {
         return makeT(data);
     }
 
-    public List<T> createBunch(List<T> list) throws SQLException {
+    public List<T> createBatch(List<T> list) throws SQLException {
         List<Map> allData = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             ID id = makeNewId();

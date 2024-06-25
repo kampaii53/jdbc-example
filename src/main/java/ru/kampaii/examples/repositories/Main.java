@@ -2,7 +2,6 @@ package ru.kampaii.examples.repositories;
 
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.UsersEntity;
-import ru.kampaii.examples.repositories.id.generators.IdGeneratorIntegerImpl;
 import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
 
 import java.sql.SQLException;
@@ -15,7 +14,7 @@ public class Main {
         List<UsersEntity> cls=new ArrayList<>();
         cls.add(new UsersEntity(null,"4",0F));
         cls.add(new UsersEntity(null,"5",0F));
-        us.createBunch(cls);
+        us.createBatch(cls);
         System.out.println(us);
     }
 }

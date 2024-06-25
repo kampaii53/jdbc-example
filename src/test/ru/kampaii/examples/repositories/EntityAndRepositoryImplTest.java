@@ -73,7 +73,7 @@ class EntityAndRepositoryImplTest {
     }
 
     @Test
-    void entityAndRepositoryCreateBunch() throws SQLException {
+    void entityAndRepositoryCreateBatch() throws SQLException {
         Random random = new Random();
         usersRepository = new UsersRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1, 10000));
         List<UsersEntity> usersData = new ArrayList<>();
@@ -85,7 +85,7 @@ class EntityAndRepositoryImplTest {
             UsersEntity entity = new UsersEntity(null, String.valueOf(i), 0F);
             usersData.add(entity);
         }
-        List<UsersEntity> listOfUsersEntities = usersRepository.createBunch(usersData);
+        List<UsersEntity> listOfUsersEntities = usersRepository.createBatch(usersData);
         for (int i = 0; i < USERS_COUNT; i++) {
             UsersEntity entity = listOfUsersEntities.get(i);
             int userId = entity.getId();
@@ -93,7 +93,7 @@ class EntityAndRepositoryImplTest {
                 acsData.add(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
             }
         }
-        accountsRepository.createBunch(acsData);
+        accountsRepository.createBatch(acsData);
         assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
     }
