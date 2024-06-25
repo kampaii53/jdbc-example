@@ -41,14 +41,14 @@ class EntityAndRepositoryImplTest {
     }
 
     @Test
-    void testInsertsWithCommonIdGenerator() {
+    void testInsertsWithCommonIdGenerator() throws SQLException {
         usersRepository = new UsersRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "users", "id", 1));
         accountsRepository = new AccountsRepositoryImpl(connection, new IdGeneratorIntegerImpl(connection, "accounts", "number", 1));
         executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
     }
 
     @Test
-    void entityAndRepositoryWithPooledGeneratorImpl() {
+    void entityAndRepositoryWithPooledGeneratorImpl() throws SQLException {
         usersRepository = new UsersRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
         accountsRepository = new AccountsRepositoryImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
         executeTest(usersRepository, accountsRepository, new UserServiceCommon(usersRepository, accountsRepository));
@@ -98,7 +98,7 @@ class EntityAndRepositoryImplTest {
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
     }
 
-    private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, UserService userService) {
+    private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, UserService userService) throws SQLException {
         int firstAccountsCount = accountsRepository.count();
         int firstUsersCount = usersRepository.count();
         for (int i = 0; i < USERS_COUNT; i++) {

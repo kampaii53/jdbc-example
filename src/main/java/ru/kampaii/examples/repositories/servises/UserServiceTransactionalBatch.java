@@ -25,7 +25,8 @@ public class UserServiceTransactionalBatch implements UserService {
     }
 
     @Override
-    public UsersEntity createUser(String name, Integer numOfAcc) {
+    public UsersEntity createUser(String name, Integer numOfAcc) throws SQLException {
+        List<AccountsEntity> accounts = new ArrayList<>();
         UsersEntity entity = new UsersEntity(null, name, 0F);
         try {
             entity = usersRepository.create(entity);
@@ -34,29 +35,11 @@ public class UserServiceTransactionalBatch implements UserService {
         }
         int userId = entity.getId();
         for (int j = 0; j < numOfAcc; j++) {
-            try {
-                accountsRepository.create(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            accounts.add(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
         }
+        accountsRepository.createBatch(accounts);
         return entity;
     }
 
-    public List<UsersEntity> createUsers(String name, Integer numOfUser, Integer numOfAcc) throws SQLException {
-        List<UsersEntity> users = new ArrayList<>();
-        List<AccountsEntity> accounts = new ArrayList<>();
-        for (int i = 0; i < numOfUser; i++) {
-            UsersEntity entity = new UsersEntity(null, name, 0F);
-            users.add(entity);
-            int userId = entity.getId();
-            for (int j = 0; j < numOfAcc; j++) {
-                accounts.add(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
-            }
-            users = usersRepository.createBatch(users);
-            accountsRepository.createBatch(accounts);
-        }
-        return users;
-    }
 }
 
