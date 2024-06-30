@@ -6,18 +6,23 @@ import org.junit.jupiter.api.Test;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
+import ru.kampaii.examples.repositories.id.generators.IdGenerator;
 import ru.kampaii.examples.repositories.id.generators.IdGeneratorIntegerImpl;
 import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
 import ru.kampaii.examples.repositories.servises.UserService;
 import ru.kampaii.examples.repositories.servises.UserServiceCommon;
 import ru.kampaii.examples.repositories.servises.UserServiceTransactional;
+import ru.kampaii.examples.repositories.servises.UserServiceTransactionalBatch;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EntityAndRepositoryImplTest {
@@ -27,6 +32,8 @@ class EntityAndRepositoryImplTest {
     private Connection connection;
     private Repository<UsersEntity, Integer> usersRepository;
     private Repository<AccountsEntity, Integer> accountsRepository;
+    private IdGenerator<Integer> usersIdGenerator;
+    private IdGenerator<Integer> accountsIdGenerator;
 
 
     @BeforeEach
@@ -97,6 +104,38 @@ class EntityAndRepositoryImplTest {
         assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
         assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
     }
+
+    @Test
+    void testWithMultiThreads() throws SQLException, InterruptedException {
+        usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+        accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+        int firstAccountsCount = accountsRepository.count();
+        int firstUsersCount = usersRepository.count();
+        usersIdGenerator = new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1, 10000);
+        accountsIdGenerator = new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "accounts", "number", 1, 10000);
+        ExecutorService executor = Executors.newFixedThreadPool(5);
+        List<Runnable> listForRunnable = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            listForRunnable.add(this::executeTestForSingleThread);
+        }
+        listForRunnable.forEach(executor::submit);
+        executor.awaitTermination(5, SECONDS);
+        assertEquals(USERS_COUNT * ACCS_PER_USER, accountsRepository.count() - firstAccountsCount);
+        assertEquals(USERS_COUNT, usersRepository.count() - firstUsersCount);
+    }
+
+    public void executeTestForSingleThread() {
+        try {
+            Connection connectionForThread = DatabaseConnectorProvider.connect();
+            UserService userService = new UserServiceTransactionalBatch(new UsersRepositoryImpl(connectionForThread, usersIdGenerator), new AccountsRepositoryImpl(connectionForThread, accountsIdGenerator), connectionForThread);
+            for (int i = 0; i < 200; i++) {
+                userService.createUser(String.valueOf(i), 5);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private void executeTest(Repository<UsersEntity, Integer> usersRepository, Repository<AccountsEntity, Integer> accountsRepository, UserService userService) throws SQLException {
         int firstAccountsCount = accountsRepository.count();

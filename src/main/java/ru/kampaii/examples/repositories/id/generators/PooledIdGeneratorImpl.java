@@ -22,8 +22,8 @@ public class PooledIdGeneratorImpl extends IdGenerator<Integer> {
     }
 
     @Override
-    public Integer makeNewId() {
-        if (listOfId.size() == 0) {
+    public synchronized Integer makeNewId() {
+        if (listOfId.isEmpty()) {
             int maxNum = 0;
             try (var statement = connection.createStatement()) {
                 var results = statement.executeQuery("SELECT MAX(" + primaryKey + ") FROM " + tableName);
