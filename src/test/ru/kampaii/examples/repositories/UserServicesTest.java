@@ -3,8 +3,6 @@ package ru.kampaii.examples.repositories;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
@@ -25,7 +23,6 @@ import java.util.concurrent.Executors;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(MockitoExtension.class)
 class UserServicesTest {
     private Connection connection;
     private Repository<UsersEntity, Integer> usersRepository;
