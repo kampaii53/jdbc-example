@@ -6,6 +6,7 @@ import ru.kampaii.examples.repositories.Repository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class UserServiceTransactional implements UserService {
@@ -25,23 +26,25 @@ public class UserServiceTransactional implements UserService {
     public UsersEntity createUser(String name, Integer numOfAcc) {
         try {
             connection.setAutoCommit(false);
-            UsersEntity entity = new UsersEntity(null, name, 0F);
+            UsersEntity entity = new UsersEntity(null, name, 0F, null);
             try {
                 entity = usersRepository.create(entity);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
             int userId = entity.getId();
+            ArrayList<AccountsEntity> accounts = new ArrayList<>();
             for (int j = 0; j < numOfAcc; j++) {
                 try {
-                    accountsRepository.create(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
+                    accounts.add(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
+                    accountsRepository.create(accounts.get(j));
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
             }
             connection.commit();
             connection.setAutoCommit(true);
-            return entity;
+            return new UsersEntity(entity.getId(), entity.getName(), entity.getTotalBalance(), accounts);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

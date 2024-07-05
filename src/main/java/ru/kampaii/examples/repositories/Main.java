@@ -12,8 +12,6 @@ public class Main {
     public static void main(String[] args) throws SQLException {
         UsersRepositoryImpl us =new UsersRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1,100));
         List<UsersEntity> cls=new ArrayList<>();
-        cls.add(new UsersEntity(null,"4",0F));
-        cls.add(new UsersEntity(null,"5",0F));
         us.createBatch(cls);
         System.out.println(us);
     }

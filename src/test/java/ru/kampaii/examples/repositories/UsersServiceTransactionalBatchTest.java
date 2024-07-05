@@ -12,6 +12,8 @@ import ru.kampaii.examples.repositories.servises.UserServiceTransactional;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +32,17 @@ public class UsersServiceTransactionalBatchTest {
     @Test
     void userServiceUnitTest() throws SQLException {
         String name = "TEST";
-        Mockito.when(usersRepository.create(any())).thenReturn(new UsersEntity(1, name, 0F));
+        Random random = new Random();
+        ArrayList<AccountsEntity> accounts = new ArrayList<>();
+        for (int j = 0; j < 5; j++) {
+            try {
+                accounts.add(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, 1));
+                accountsRepository.create(accounts.get(j));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Mockito.when(usersRepository.create(any())).thenReturn(new UsersEntity(1, name, 0F, accounts));
         UsersEntity entity = service.createUser(name, 5);
         assertEquals(name, entity.getName());
     }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
+import ru.kampaii.examples.repositories.id.generators.AtomicIdGenerator;
 import ru.kampaii.examples.repositories.id.generators.IdGenerator;
 import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
 import ru.kampaii.examples.repositories.servises.UserService;
@@ -75,15 +76,15 @@ class UserServicesTest {
     void testWithMultiThreads() throws SQLException, InterruptedException {
         int firstAccountsCount = accountsRepository.count();
         int firstUsersCount = usersRepository.count();
-        usersIdGenerator = new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1, 10000);
-        accountsIdGenerator = new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "accounts", "number", 1, 10000);
+        usersIdGenerator = new AtomicIdGenerator(DatabaseConnectorProvider.connect(), "users", "id", 1);
+        accountsIdGenerator = new AtomicIdGenerator(DatabaseConnectorProvider.connect(), "accounts", "number", 1);
         ExecutorService executor = Executors.newFixedThreadPool(5);
         List<Runnable> listForRunnable = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             listForRunnable.add(this::executeTestForSingleThread);
         }
         listForRunnable.forEach(executor::submit);
-        executor.awaitTermination(5, SECONDS);
+        executor.awaitTermination(150, SECONDS);
         assertEquals(5000, accountsRepository.count() - firstAccountsCount);
         assertEquals(1000, usersRepository.count() - firstUsersCount);
     }
@@ -98,6 +99,7 @@ class UserServicesTest {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("поток завершил работу");
     }
 
 }
