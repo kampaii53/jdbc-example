@@ -1,24 +1,20 @@
 package ru.kampaii.examples.repositories.id.generators;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class PooledIdGeneratorImpl extends AbstractPoolIdGenerator<Integer> {
-    protected static final Logger log = LoggerFactory.getLogger(PooledIdGeneratorImpl.class);
+public class AtomicPoolIdGenerator extends AbstractPoolIdGenerator {
+    private AtomicInteger idNum;
     Integer dequeSize;
-    private final ConcurrentLinkedQueue<Integer> listOfId;
+    Integer finalNumber;
 
-    public PooledIdGeneratorImpl(Connection connection, String tableName, String primaryKey, Integer numOfPrimaryKey, Integer dequeSize) {
+    public AtomicPoolIdGenerator(Connection connection, String tableName, String primaryKey, Integer numOfPrimaryKey, Integer dequeSize) {
         this.connection = connection;
         this.tableName = tableName;
         this.primaryKey = primaryKey;
         this.numOfPrimaryKey = numOfPrimaryKey;
         this.dequeSize = dequeSize;
-        this.listOfId = new ConcurrentLinkedQueue<>();
     }
 
     @Override
@@ -32,14 +28,19 @@ public class PooledIdGeneratorImpl extends AbstractPoolIdGenerator<Integer> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < dequeSize; i++) {
-            listOfId.add(maxNum + i + 1);
-        }
-        log.info("New select sql in " + tableName);
+        this.idNum = new AtomicInteger(maxNum);
+        this.finalNumber = maxNum + dequeSize;
     }
 
     @Override
-    protected Integer internalGetId() {
-        return listOfId.poll();
+    protected Object internalGetId() {
+        int expectedValue = idNum.intValue();
+        if (expectedValue < finalNumber) {
+            if (idNum.compareAndSet(expectedValue, expectedValue + 1)) {
+                return idNum.intValue();
+            }
+        }
+        return null;
     }
+
 }

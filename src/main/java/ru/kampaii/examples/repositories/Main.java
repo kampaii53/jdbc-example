@@ -1,18 +1,19 @@
 package ru.kampaii.examples.repositories;
 
-import ru.kampaii.examples.config.DatabaseConnectorProvider;
-import ru.kampaii.examples.domain.entities.UsersEntity;
-import ru.kampaii.examples.repositories.id.generators.PooledIdGeneratorImpl;
+import ru.kampaii.examples.repositories.id.generators.AtomicPoolIdGenerator;
+import ru.kampaii.examples.repositories.id.generators.IdGenerator;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
-    public static void main(String[] args) throws SQLException {
-        UsersRepositoryImpl us =new UsersRepositoryImpl(DatabaseConnectorProvider.connect(), new PooledIdGeneratorImpl(DatabaseConnectorProvider.connect(), "users", "id", 1,100));
-        List<UsersEntity> cls=new ArrayList<>();
-        us.createBatch(cls);
-        System.out.println(us);
+    private static IdGenerator<Integer> usersIdGenerator;
+    private static IdGenerator<Integer> accountsIdGenerator;
+
+    public static void main(String[] args) throws SQLException, InterruptedException {
+        usersIdGenerator = new AtomicPoolIdGenerator(null, "users", "id", 1,1000);
     }
 }
