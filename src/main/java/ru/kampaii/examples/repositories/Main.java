@@ -14,6 +14,12 @@ public class Main {
     private static IdGenerator<Integer> accountsIdGenerator;
 
     public static void main(String[] args) throws SQLException, InterruptedException {
-        usersIdGenerator = new AtomicPoolIdGenerator(null, "users", "id", 1,1000);
+        var threadPool = Executors.newFixedThreadPool(5);
+        List<Runnable> listForRunnable = new ArrayList<>();
+        Incrementer incrementer = new Incrementer(100);
+        for (int i = 0; i < 5; i++) {
+            listForRunnable.add(new Generator(incrementer));
+        }
+        listForRunnable.forEach(threadPool::submit);
     }
 }

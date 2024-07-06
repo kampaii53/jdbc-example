@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AtomicPoolIdGenerator extends AbstractPoolIdGenerator {
+public class AtomicPoolIdGenerator extends AbstractPoolIdGenerator<Integer> {
     private AtomicInteger idNum;
     Integer dequeSize;
     Integer finalNumber;
@@ -33,7 +33,7 @@ public class AtomicPoolIdGenerator extends AbstractPoolIdGenerator {
     }
 
     @Override
-    protected Object internalGetId() {
+    protected Integer internalGetId() {
         int expectedValue = idNum.intValue();
         if (expectedValue < finalNumber) {
             if (idNum.compareAndSet(expectedValue, expectedValue + 1)) {
