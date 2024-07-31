@@ -27,7 +27,7 @@ public class UserServiceTransactionalBatch implements UserService {
     @Override
     public UsersEntity createUser(String name, Integer numOfAcc) throws SQLException {
         List<AccountsEntity> accounts = new ArrayList<>();
-        UsersEntity entity = new UsersEntity(null, name, 0F);
+        UsersEntity entity = new UsersEntity(null, name, 0F, null);
         try {
             entity = usersRepository.create(entity);
         } catch (SQLException e) {
@@ -38,7 +38,8 @@ public class UserServiceTransactionalBatch implements UserService {
             accounts.add(new AccountsEntity(null, (float) random.nextInt(0, 10000), 1, userId));
         }
         accountsRepository.createBatch(accounts);
-        return entity;
+        return new UsersEntity(entity.getId(), entity.getName(), entity.getTotalBalance(), accounts);
+
     }
 
 }

@@ -81,7 +81,7 @@ class EntityAndRepositoryImplTest {
         int firstUsersCount = usersRepository.count();
         List<AccountsEntity> acsData = new ArrayList<>();
         for (int i = 0; i < USERS_COUNT; i++) {
-            UsersEntity entity = new UsersEntity(null, String.valueOf(i), 0F);
+            UsersEntity entity = new UsersEntity(null, String.valueOf(i), 0F, null);
             usersData.add(entity);
         }
         List<UsersEntity> listOfUsersEntities = usersRepository.createBatch(usersData);

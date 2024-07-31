@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class PooledIdGeneratorImpl extends IdGenerator<Integer> {
+public class PooledIdGeneratorImpl extends AbstractPoolIdGenerator<Integer> {
     protected static final Logger log = LoggerFactory.getLogger(PooledIdGeneratorImpl.class);
     Integer dequeSize;
-    private final LinkedList<Integer> listOfId;
+    private final ConcurrentLinkedQueue<Integer> listOfId;
 
     public PooledIdGeneratorImpl(Connection connection, String tableName, String primaryKey, Integer numOfPrimaryKey, Integer dequeSize) {
         this.connection = connection;
@@ -18,26 +18,28 @@ public class PooledIdGeneratorImpl extends IdGenerator<Integer> {
         this.primaryKey = primaryKey;
         this.numOfPrimaryKey = numOfPrimaryKey;
         this.dequeSize = dequeSize;
-        this.listOfId = new LinkedList<>();
+        this.listOfId = new ConcurrentLinkedQueue<>();
     }
 
     @Override
-    public synchronized Integer makeNewId() {
-        if (listOfId.isEmpty()) {
-            int maxNum = 0;
-            try (var statement = connection.createStatement()) {
-                var results = statement.executeQuery("SELECT MAX(" + primaryKey + ") FROM " + tableName);
-                if (results.next()) {
-                    maxNum = results.getInt(1);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+    protected void refreshPool() {
+        int maxNum = 0;
+        try (var statement = connection.createStatement()) {
+            var results = statement.executeQuery("SELECT MAX(" + primaryKey + ") FROM " + tableName);
+            if (results.next()) {
+                maxNum = results.getInt(1);
             }
-            for (int i = 0; i < dequeSize; i++) {
-                listOfId.add(maxNum + i + 1);
-            }
-            log.info("New select sql in " + tableName);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return listOfId.pop();
+        for (int i = 0; i < dequeSize; i++) {
+            listOfId.add(maxNum + i + 1);
+        }
+        log.info("New select sql in " + tableName);
+    }
+
+    @Override
+    protected Integer internalGetId() {
+        return listOfId.poll();
     }
 }

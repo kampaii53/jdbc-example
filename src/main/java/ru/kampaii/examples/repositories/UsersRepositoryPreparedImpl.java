@@ -26,6 +26,6 @@ public class UsersRepositoryPreparedImpl extends UsersRepositoryImpl {
         statement.setString(2, object.getName());
         statement.setFloat(3, object.getTotalBalance());
         statement.executeUpdate();
-        return new UsersEntity(id, object.getName(), object.getTotalBalance());
+        return new UsersEntity(id, object.getName(), object.getTotalBalance(), null);
     }
 }
