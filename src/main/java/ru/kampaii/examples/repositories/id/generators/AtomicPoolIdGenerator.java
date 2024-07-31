@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AtomicPoolIdGenerator extends AbstractPoolIdGenerator<Integer> {
     private AtomicInteger idNum;
     Integer dequeSize;
-    Integer finalNumber;
+    Integer firstNumber;
 
     public AtomicPoolIdGenerator(Connection connection, String tableName, String primaryKey, Integer numOfPrimaryKey, Integer dequeSize) {
         this.connection = connection;
@@ -15,6 +15,17 @@ public class AtomicPoolIdGenerator extends AbstractPoolIdGenerator<Integer> {
         this.primaryKey = primaryKey;
         this.numOfPrimaryKey = numOfPrimaryKey;
         this.dequeSize = dequeSize;
+        refreshPool();
+    }
+
+    @Override
+    public final Integer makeNewId() {
+        Integer result = internalGetId();
+        if (result == 0) {
+            refreshPool();
+            return internalGetId();
+        }
+        return result;
     }
 
     @Override
@@ -28,19 +39,14 @@ public class AtomicPoolIdGenerator extends AbstractPoolIdGenerator<Integer> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        this.idNum = new AtomicInteger(maxNum);
-        this.finalNumber = maxNum + dequeSize;
+        this.firstNumber = maxNum + 1;
+        this.idNum = new AtomicInteger(firstNumber);
     }
 
     @Override
-    protected Integer internalGetId() {
-        int expectedValue = idNum.intValue();
-        if (expectedValue < finalNumber) {
-            if (idNum.compareAndSet(expectedValue, expectedValue + 1)) {
-                return idNum.intValue();
-            }
-        }
-        return null;
+    protected synchronized Integer internalGetId() {
+        idNum.compareAndSet(dequeSize + firstNumber, 0);
+        return idNum.getAndIncrement();
     }
 
 }

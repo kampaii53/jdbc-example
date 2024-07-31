@@ -3,8 +3,6 @@ package ru.kampaii.examples.repositories;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.kampaii.examples.config.DatabaseConnectorProvider;
 import ru.kampaii.examples.domain.entities.AccountsEntity;
 import ru.kampaii.examples.domain.entities.UsersEntity;
@@ -17,16 +15,12 @@ import ru.kampaii.examples.repositories.servises.UserServiceCommon;
 import ru.kampaii.examples.repositories.servises.UserServiceTransactional;
 import ru.kampaii.examples.repositories.servises.UserServiceTransactionalBatch;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -40,7 +34,10 @@ class UserServicesTest {
 
     @BeforeEach
     void setUp() throws SQLException {
-        }
+        this.connection = DatabaseConnectorProvider.connect();
+        this.usersRepository = new UsersRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "users", "id", 1, 1000));
+        this.accountsRepository = new AccountsRepositoryPreparedImpl(connection, new PooledIdGeneratorImpl(connection, "accounts", "number", 1, 1000));
+    }
 
     @AfterEach
     void tearDown() {
@@ -92,6 +89,7 @@ class UserServicesTest {
 
     @Test
     void multiThreadsTestWithPooledAtomicIdGenerator() throws SQLException, InterruptedException {
+
         usersIdGenerator = new AtomicPoolIdGenerator(DatabaseConnectorProvider.connect(), "users", "id", 1,1000);
         accountsIdGenerator = new AtomicPoolIdGenerator(DatabaseConnectorProvider.connect(), "accounts", "number", 1,1000);
         executeTestWithMultiThreads();
@@ -106,7 +104,7 @@ class UserServicesTest {
             listForRunnable.add(this::executeTestForSingleThread);
         }
         listForRunnable.forEach(executor::submit);
-        Thread.sleep(150000);
+        Thread.sleep(20000);
         assertEquals(5000, accountsRepository.count() - firstAccountsCount);
         assertEquals(1000, usersRepository.count() - firstUsersCount);
     }
